@@ -1,5 +1,9 @@
 defmodule Sudoku.Board do
+  @moduledoc """
+  A genserver for playing a game of sudoku.
+  """
   use GenServer
+  alias Sudoku.Tile
 
   def start_link(size) do
     GenServer.start_link(__MODULE__, [size: size])
@@ -7,7 +11,7 @@ defmodule Sudoku.Board do
 
   def init([size: 4]) do
     {:ok, %{:size => 4,
-        {1,1} => Sudoku.Tile.start_link([])}}
+        {1, 1} => Tile.start_link([])}}
   end
 
   def init(_) do

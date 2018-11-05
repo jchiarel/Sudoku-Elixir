@@ -2,6 +2,7 @@ defmodule Sudoku.BoardTest do
   use ExUnit.Case
 
   alias Sudoku.Board
+  alias Sudoku.Tile
 
   setup do
     board = start_supervised!({Board, 4})
@@ -10,7 +11,7 @@ defmodule Sudoku.BoardTest do
 
   test "initial state", %{board: board} do
     {:ok, tile} = Board.get_tile(board, {1, 1})
-    possible = Sudoku.Tile.get_possible(tile)
+    possible = Tile.get_possible(tile)
     assert possible == [1, 2, 3, 4]
 
     {:error, _} = Board.get_tile(board, {5, 4})

@@ -1,4 +1,8 @@
 defmodule Sudoku.Tile do
+  @moduledoc """
+  Represents a single square in a game of sudoku
+  """
+
   use Agent
   require Logger
 
