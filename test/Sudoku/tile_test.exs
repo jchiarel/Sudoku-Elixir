@@ -36,7 +36,12 @@ defmodule Sudoku.TileTest do
     Tile.add_related(tile, related)
     Tile.set_value(tile, 2)
 
+    wait(tile)
     assert Tile.get_possible(related) == [1, 3, 4]
+  end
+
+  def wait(tile) do
+    :sys.get_state(tile)
   end
 end
 
