@@ -6,40 +6,46 @@ defmodule Sudoku.Tile do
   use Agent
   require Logger
 
+  @spec start_link(any()) :: {:error, any()} | {:ok, pid()}
   def start_link(name) do
     Agent.start_link(fn -> %{possible: [1, 2, 3, 4], related: [], name: name, solved: false} end)
   end
 
+  @spec get_possible(pid()) :: list(integer())
   def get_possible(tile) do
     Agent.get(tile, &Map.get(&1, :possible))
   end
 
+  @spec clear(pid(), integer()) :: :ok
   def clear(tile, value) do
     Agent.update(tile, &clear_server(&1, value))
     Agent.cast(tile, &notify/1)
   end
 
+  @spec set_value(pid(), integer()) :: :ok
   def set_value(tile, value) do
     Agent.update(tile, &set_value_server(&1, value))
     Agent.cast(tile, &notify/1)
   end
 
+  @spec add_related(pid(), pid()) :: :ok
   def add_related(tile, rel_tile) when tile != rel_tile do
     Agent.update(tile, &add_related_server(&1, rel_tile))
   end
 
   def add_related(_, _) do
+    :ok
   end
 
   # Server functions
 
   defp set_value_server(%{name: name} = state, value) do
-    IO.puts "Tile.set(#{name}) = #{value}"
+    Logger.debug "Tile.set(#{name}) = #{value}"
     Map.update!(state, :possible, fn _ -> [value] end)
   end
 
   defp clear_server(%{possible: pos, name: name} = state, value) when length(pos) > 1 do
-    IO.puts "Tile.clear(#{name}, #{value})"
+    Logger.debug "Tile.clear(#{name}, #{value})"
     Map.update!(state, :possible, &(&1 -- [value]))
   end
 
@@ -52,7 +58,7 @@ defmodule Sudoku.Tile do
   end
 
   defp notify(%{possible: [value], name: name, solved: false} = state) do
-    IO.puts "#{name} is #{value}"
+    Logger.debug "#{name} is #{value}"
     Enum.each(state.related, &clear(&1, value))
     %{state | solved: true}
   end

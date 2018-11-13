@@ -20,12 +20,12 @@ defmodule Sudoku.BoardTest do
   end
 
   test "init rows" do
-    rows = Board.init_rows(1, 1, 4)
+    rows = Board.init_rows({1, 1}, 4)
     assert rows == [{1, 1}, {1, 2}, {2, 1}, {1, 3}, {3, 1}, {1, 4}, {4, 1}]
   end
 
   test "init boxes" do
-    boxes = Board.init_boxes(2, 4, 4)
+    boxes = Sudoku.Board.init_boxes({2, 4}, 4)
     assert boxes == [{1, 3}, {1, 4}, {2, 3}, {2, 4}]
   end
 

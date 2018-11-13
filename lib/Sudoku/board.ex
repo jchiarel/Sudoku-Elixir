@@ -5,6 +5,12 @@ defmodule Sudoku.Board do
   use GenServer
   alias Sudoku.Tile
 
+  @typedoc """
+  The row and column location of a tile
+  """
+  @type location :: {integer, integer}
+
+
   def start_link(size) do
     GenServer.start_link(__MODULE__, [size: size])
   end
@@ -20,6 +26,7 @@ defmodule Sudoku.Board do
     {:error, "Invalid board config"}
   end
 
+  @spec init_grid(integer()) :: map()
   def init_grid(size) do
     for i <- 1..size, j <- 1..size, into: %{} do
       {:ok, tile} = Tile.start_link("Tile#{i}#{j}")
@@ -27,21 +34,24 @@ defmodule Sudoku.Board do
     end
   end
 
+  @spec init_groups(map(), integer()) :: [any()]
   def init_groups(grid, size) do
     for i <- 1..size, j <- 1..size do
-      init_groups(grid, i, j, size)
+      init_groups(grid, {i, j}, size)
     end
   end
 
-  def init_groups(grid, i, j, size) do
-    {:ok, tile} = Map.fetch(grid, {i, j})
-    init_rows(i, j, size) ++ init_boxes(i, j, size)
+  @spec init_groups(map(), location, integer()) :: :ok
+  def init_groups(grid, loc, size) do
+    {:ok, tile} = Map.fetch(grid, loc)
+    init_rows(loc, size) ++ init_boxes(loc, size)
     |> Enum.uniq
     |> Enum.map(fn key -> Map.get(grid, key) end)
     |> Enum.each(fn rel_tile -> Tile.add_related(tile, rel_tile) end)
   end
 
-  def init_boxes(i, j, 4) do
+  @spec init_boxes(location, integer()) :: list(location)
+  def init_boxes({i, j}, 4) do
     i_start = div(i - 1, 2) * 2 + 1
     j_start = div(j - 1, 2) * 2 + 1
     for x <- i_start..i_start + 1, y <- j_start..j_start + 1 do
@@ -49,7 +59,8 @@ defmodule Sudoku.Board do
     end
   end
 
-  def init_rows(i, j, size) do
+  @spec init_rows(location, integer()) :: list(location)
+  def init_rows({i, j}, size) do
     for k <- 1..size do
       [{i, k}, {k, j}]
     end
@@ -57,10 +68,12 @@ defmodule Sudoku.Board do
     |> Enum.uniq
   end
 
+  @spec get_tile(pid(), location) :: pid()
   def get_tile(server, loc) when is_tuple(loc) do
     GenServer.call(server, {:get_tile, loc})
   end
 
+  @spec set_value(pid, location, integer) :: any()
   def set_value(server, loc, value) do
     GenServer.call(server, {:set_value, loc, value})
   end
